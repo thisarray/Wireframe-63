@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>fire</title>
+  <script src="../../jsgame0.js"></script>
+  <style type="text/css" media="screen">
+body {
+  background-color: white;
+  color: black;
+}
+.hidden {
+  display: none;
+}
+#original {
+  margin-left: 1em;
+}
+  </style>
+</head>
+
+<body>
+<section id="imageLoader" class="hidden">
+  <img class="hidden" src="images/background.png" alt="background" data-name="background">
+  <img class="hidden" src="images/catcher0.png" alt="catcher0" data-name="catcher0">
+  <img class="hidden" src="images/catcher1.png" alt="catcher1" data-name="catcher1">
+  <img class="hidden" src="images/catcher2.png" alt="catcher2" data-name="catcher2">
+  <img class="hidden" src="images/jumper0.png" alt="jumper0" data-name="jumper0">
+  <img class="hidden" src="images/jumper1.png" alt="jumper1" data-name="jumper1">
+  <img class="hidden" src="images/jumper10.png" alt="jumper10" data-name="jumper10">
+  <img class="hidden" src="images/jumper11.png" alt="jumper11" data-name="jumper11">
+  <img class="hidden" src="images/jumper12.png" alt="jumper12" data-name="jumper12">
+  <img class="hidden" src="images/jumper13.png" alt="jumper13" data-name="jumper13">
+  <img class="hidden" src="images/jumper14.png" alt="jumper14" data-name="jumper14">
+  <img class="hidden" src="images/jumper15.png" alt="jumper15" data-name="jumper15">
+  <img class="hidden" src="images/jumper16.png" alt="jumper16" data-name="jumper16">
+  <img class="hidden" src="images/jumper17.png" alt="jumper17" data-name="jumper17">
+  <img class="hidden" src="images/jumper18.png" alt="jumper18" data-name="jumper18">
+  <img class="hidden" src="images/jumper19.png" alt="jumper19" data-name="jumper19">
+  <img class="hidden" src="images/jumper2.png" alt="jumper2" data-name="jumper2">
+  <img class="hidden" src="images/jumper20.png" alt="jumper20" data-name="jumper20">
+  <img class="hidden" src="images/jumper21.png" alt="jumper21" data-name="jumper21">
+  <img class="hidden" src="images/jumper3.png" alt="jumper3" data-name="jumper3">
+  <img class="hidden" src="images/jumper4.png" alt="jumper4" data-name="jumper4">
+  <img class="hidden" src="images/jumper5.png" alt="jumper5" data-name="jumper5">
+  <img class="hidden" src="images/jumper6.png" alt="jumper6" data-name="jumper6">
+  <img class="hidden" src="images/jumper7.png" alt="jumper7" data-name="jumper7">
+  <img class="hidden" src="images/jumper8.png" alt="jumper8" data-name="jumper8">
+  <img class="hidden" src="images/jumper9.png" alt="jumper9" data-name="jumper9">
+  <img class="hidden" src="images/jumperdropped.png" alt="jumperdropped" data-name="jumperdropped">
+</section>
+
+<main>
+<h1>fire</h1>
+
+<canvas id="screen">
+The game screen appears here if your browser supports the Canvas API.
+</canvas>
+<section id="controls">
+  <button type="button" id="reset">Reset</button>
+  <button type="button" id="pause">Pause</button>
+</section>
+
+<h2>Attribution</h2>
+
+<p><a href="https://wireframe.raspberrypi.com/issues/63">Code an homage to a Game & Watch classic, pages 66-67, by Mark Vanstone</a>.</p>
+
+<p>Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/legalcode">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported</a>.</p>
+
+<h2>Original Python code</h2>
+
+<pre id="original"><code>
+# Fire
+import pgzrun
+count = catcherPos = moveCatcher = gameState = score = 0
+catchers = []
+jumpers = []
+jumperPositions = [(130,220),(190,260),(210,320),(220,360),(240,410),(260,360),
+                   (270,320),(290,250),(320,220),(340,250),(360,300),(380,360),
+                   (390,410),(420,360),(430,300),(470,250),(500,300),(520,360),
+                   (538,410),(580,360),(600,320),(620,350)]
+for c in range(3):
+    catchers.append(Actor(&#x27;catcher&#x27;+str(c), center=(240+(c*150), 425)))
+
+def draw():
+    screen.blit(&quot;background&quot;,(0,0))
+    for c in range(3):
+        if catcherPos == c: catchers[c].draw()
+    for j in jumpers:
+        if j.state == 0: j.draw()
+        if j.state == -1 and count%2 == 0: j.draw()
+    screen.draw.text(&quot;SAVED: &quot;+str(score), topleft = (580, 120), color=(0,0,0) , fontsize=25)
+
+def update():
+    global count
+    count += 1
+    if(count%30 == 0) : doUpdate()
+    if(count%2000 == 0) : makeJumper()
+
+def doUpdate():
+    global catcherPos, moveCatcher, gameState, score
+    if gameState == 0:
+        catcherPos = limit(catcherPos+moveCatcher, 0, 2)
+        moveCatcher = 0
+        for j in jumpers:
+            if (j.frame &lt; 21 and j.state == 0):
+                j.frame += 1
+                j.image = &quot;jumper&quot;+str(j.frame)
+                j.pos = jumperPositions[j.frame]
+            else:
+                if j.state == 0:
+                    j.state = 1
+                    score += 1
+                    makeJumper()
+            if (j.frame == 4 and catcherPos != 0) or (j.frame == 12 and catcherPos != 1) or (j.frame == 18 and catcherPos != 2):
+                j.state = -1
+                j.image = &quot;jumperdropped&quot;
+                j.y += 50
+                gameState = 1
+
+def on_key_down(key):
+    global moveCatcher
+    if key.name == &quot;LEFT&quot;:
+        moveCatcher = -1
+    if key.name == &quot;RIGHT&quot;:
+        moveCatcher = 1
+
+def makeJumper():
+    if len(jumpers)%5 == 4:
+        jumpers.append(Actor(&#x27;jumper0&#x27;, center=(130, 270)))
+        jumpers[len(jumpers)-1].frame = 1
+    else:
+        jumpers.append(Actor(&#x27;jumper0&#x27;, center=(130, 220)))
+        jumpers[len(jumpers)-1].frame = 0
+    jumpers[len(jumpers)-1].state = 0
+
+def limit(n, minn, maxn):
+    return max(min(maxn, n), minn)
+
+makeJumper()
+
+pgzrun.go()
+</code></pre>
+</main>
+
+<script>
+// Fire
+
+const JUMPER_POSITIONS = [[130, 220], [190, 260], [210, 320], [220, 360], [240, 410], [260, 360],
+                          [270, 320], [290, 250], [320, 220], [340, 250], [360, 300], [380, 360],
+                          [390, 410], [420, 360], [430, 300], [470, 250], [500, 300], [520, 360],
+                          [538, 410], [580, 360], [600, 320], [620, 350]];
+
+var count, catcherPos, moveCatcher, gameState, score, catchers, jumpers;
+
+function reset() {
+  count = 0;
+  catcherPos = 0;
+  moveCatcher = 0;
+  gameState = 0;
+  score = 0;
+  catchers = [];
+  jumpers = [];
+  for (let c = 0; c < 3; c++) {
+    let holden = new Actor('catcher' + c);
+    holden.center = [240 + (c * 150), 425];
+    catchers.push(holden);
+  }
+  makeJumper();
+}
+
+function draw() {
+  screen.blit("background", [0, 0]);
+  for (let c = 0; c < 3; c++) {
+    if (catcherPos === c) {
+      catchers[c].draw();
+    }
+  }
+  for (let j of jumpers) {
+    if (j.state === 0) {
+      j.draw();
+    }
+    if ((j.state === -1) && ((count % 2) === 0)) {
+      j.draw();
+    }
+  }
+  screen.draw.text("SAVED: " + score, {
+    topleft: [580, 120],
+    color: [0, 0, 0],
+    fontsize: 25
+  });
+}
+
+function update() {
+  count += 1;
+  if ((count % 30) === 0) {
+    doUpdate();
+  }
+  if ((count % 2000) === 0) {
+    makeJumper();
+  }
+}
+
+function doUpdate() {
+  if (gameState === 0) {
+    catcherPos = limit(catcherPos + moveCatcher, 0, 2);
+    moveCatcher = 0;
+    for (let j of jumpers) {
+      if ((j.frame < 21) && (j.state === 0)) {
+        j.frame += 1;
+        j.name = "jumper" + j.frame;
+        j.pos = JUMPER_POSITIONS[j.frame];
+      }
+      else {
+        if (j.state === 0) {
+          j.state = 1;
+          score += 1;
+          makeJumper();
+        }
+      }
+      if (((j.frame === 4) && (catcherPos !== 0)) || ((j.frame === 12) && (catcherPos !== 1)) || ((j.frame === 18) && (catcherPos !== 2))) {
+        j.state = -1;
+        j.name = "jumperdropped";
+        j.posy += 50;
+        gameState = 1;
+      }
+    }
+  }
+}
+
+function on_key_down(key) {
+  if (key === keys.LEFT) {
+    moveCatcher = -1;
+  }
+  if (key === keys.RIGHT) {
+    moveCatcher = 1;
+  }
+}
+
+function makeJumper() {
+  let jumper;
+  if ((jumpers.length % 5) === 4) {
+    jumper = new Actor('jumper0');
+    jumper.center = [130, 270];
+    jumper.frame = 1;
+    jumpers.push(jumper);
+  }
+  else {
+    jumper = new Actor('jumper0');
+    jumper.center = [130, 220];
+    jumper.frame = 0;
+    jumpers.push(jumper);
+  }
+  jumper.state = 0;
+}
+
+function limit(n, minn, maxn) {
+  return Math.max(Math.min(maxn, n), minn);
+}
+
+window.addEventListener('load', (event) => {
+  images.LOAD('#imageLoader img');
+  reset();
+  screen.set_mode('#screen', '#reset', '#pause');
+});
+</script>
+</body>
+
+</html>

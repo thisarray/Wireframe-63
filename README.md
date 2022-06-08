@@ -8,3 +8,5 @@ Build a Guitar Hero-style game controller, pages 62-65, by Ben Everard and Mark 
 Code an homage to a Game & Watch classic, pages 66-67, by Mark Vanstone.
 
 The code examples are licenced under Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported.
+
+[Run the JavaScript port of Source Code in your browser.](https://thisarray.github.io/Wireframe-63/source-code-game-and-watch/fire.html)
